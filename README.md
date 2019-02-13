@@ -1,4 +1,4 @@
-# Crime_Detection
+# Crime Detection
 Detecting crime in progress by identifying unusual human pose sequences using Deep Learning
 
 ## Preparing training dataset
