@@ -29,7 +29,7 @@ Make sure you have FFMPEG installed (with x264 support) by e.g.:
 	sudo apt install ffmpeg
 
 
-Download (UCF Crime Dataset)[http://crcv.ucf.edu/cchen/] (roughly 100GB).
+Download [UCF Crime Dataset](http://crcv.ucf.edu/cchen/) (roughly 100GB).
 For training, normal videos with the following numbers are used:
 
 	001, 004, 007, 008, 011, 012, 017, 020, 021, 023, 026, 028, 032, 037, 038,
@@ -56,11 +56,11 @@ Training would require another conda environment to be set up:
 	pip install -r requirements.txt
 	source activate cd
 
-For training, Jupyter notebook (Crime Detection)[Crime_Detection.ipynb] is provided. You can run it by typing:
+For training, Jupyter notebook [Crime Detection](Crime_Detection.ipynb) is provided. You can run it by typing:
 
 	jupyter notebook Crime_Detection.ipynb
 
-There is an older notebook (Pose Detection)[Pose_Detection.ipynb] that demonstrates how
+There is an older notebook [Pose Detection](Pose_Detection.ipynb) that demonstrates how
 to use Microsoft's state-of-art (01/2019) human pose detector, however without any tracking.
 
 ## Disclaimer
