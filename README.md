@@ -46,7 +46,9 @@ After you finished all previous steps, run the following:
 	./run.sh
 
 This could take a few hours/days/weeks depending on the performance of your computer. 
-Once finished, it creates a file 'sequences.csv' that contain all training sequences.
+Once finished, it creates a file 'sequences.csv' that contain all training sequences and a file 
+'pose_pair_sequences.csv' which contains all pairs of sequences with spatiotemporal collision (for detecting
+crimes with multiple actors).
 
 ## Training
 
