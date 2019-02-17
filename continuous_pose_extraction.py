@@ -6,6 +6,8 @@ import os
 import time
 import sys
 
+from data_format import columns, types
+
 tracked_directory = "tracked"
 
 clips = [
@@ -25,93 +27,6 @@ tracked_file_name = 'alphapose-results-forvis-tracked.json'
 confidence_threshold = 0.0  # all keypoints with lower score should be ignored
 
 sequences_file_name = 'sequences.csv'
-
-# Column names for the CSV file containing all continuous pose sequences
-columns = ['sequence_id',        # unique sequence ID
-           'step',               # step within a sequence
-           'frame',              # frame number in the original video
-           'image',              # image name
-           'idx',                # tracked object index
-           'score',              # confidence score
-           'x0', 'y0', 'c0',     # nose
-           'x1', 'y1', 'c1',     # left eye
-           'x2', 'y2', 'c2',     # right eye
-           'x3', 'y3', 'c3',     # left ear
-           'x4', 'y4', 'c4',     # right ear
-           'x5', 'y5', 'c5',     # left shoulder
-           'x6', 'y6', 'c6',     # right shoulder
-           'x7', 'y7', 'c7',     # left elbow
-           'x8', 'y8', 'c8',     # right elbow
-           'x9', 'y9', 'c9',     # left wrist
-           'x10', 'y10', 'c10',  # right wrist
-           'x11', 'y11', 'c11',  # left hip
-           'x12', 'y12', 'c12',  # right hip
-           'x13', 'y13', 'c13',  # left knee
-           'x14', 'y14', 'c14',  # right knee
-           'x15', 'y15', 'c15',  # left ankle
-           'x16', 'y16', 'c16',  # right ankle
-          ]
-
-# Types of columns of the CSV file containing all continuous pose sequences
-types = {
-    'sequence_id': 'int',
-    'step': 'int',
-    'frame': 'int',
-    'image': 'object',
-    'idx': 'int',
-    'score': 'float',
-    'x0': 'float',
-    'y0': 'float',
-    'c0': 'float',
-    'x1': 'float',
-    'y1': 'float',
-    'c1': 'float',
-    'x2': 'float',
-    'y2': 'float',
-    'c2': 'float',
-    'x3': 'float',
-    'y3': 'float',
-    'c3': 'float',
-    'x4': 'float',
-    'y4': 'float',
-    'c4': 'float',
-    'x5': 'float',
-    'y5': 'float',
-    'c5': 'float',
-    'x6': 'float',
-    'y6': 'float',
-    'c6': 'float',
-    'x7': 'float',
-    'y7': 'float',
-    'c7': 'float',
-    'x8': 'float',
-    'y8': 'float',
-    'c8': 'float',
-    'x9': 'float',
-    'y9': 'float',
-    'c9': 'float',
-    'x10': 'float',
-    'y10': 'float',
-    'c10': 'float',
-    'x11': 'float',
-    'y11': 'float',
-    'c11': 'float',
-    'x12': 'float',
-    'y12': 'float',
-    'c12': 'float',
-    'x13': 'float',
-    'y13': 'float',
-    'c13': 'float',
-    'x14': 'float',
-    'y14': 'float',
-    'c14': 'float',
-    'x15': 'float',
-    'y15': 'float',
-    'c15': 'float',
-    'x16': 'float',
-    'y16': 'float',
-    'c16': 'float'
-}
 
 """
 Extracts all continuous sequences from given tracking data
