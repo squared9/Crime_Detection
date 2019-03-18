@@ -36,8 +36,6 @@ Markdown==3.0.1
 MarkupSafe==1.1.0
 matplotlib==3.0.1
 mistune==0.8.4
-mkl-fft==1.0.6
-mkl-random==1.0.1
 munkres==1.0.12
 nbconvert==5.3.1
 nbformat==4.4.0
@@ -71,7 +69,6 @@ scipy==1.1.0
 Send2Trash==1.5.0
 six==1.11.0
 tensorboard==1.12.0
-tensorflow==1.12.0
 termcolor==1.1.0
 terminado==0.8.1
 testpath==0.4.2

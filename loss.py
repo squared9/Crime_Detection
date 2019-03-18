@@ -1,20 +1,25 @@
 """
 Loss function definitions
 """
-
+import numpy as np
 import keras.backend as K
 import tensorflow as tf
 from coordinates import get_loss_weights
 from coordinates import CoordinateType
 from coordinates import get_coordinate_dimension
-
 # NOTE: cordinate_encoding variable must be set to proper coordinate type
 #       Keras can't pass additional parameters to its loss function callbacks :-(
-# coordinate_encoding = CoordinateType.SAME
-# coordinate_encoding = CoordinateType.OFFSET
-coordinate_encoding = CoordinateType.ANGLE
+from configuration import IGNORE_MOVEMENT, coordinate_encoding, number_of_coordinates, number_of_frames
 
-number_of_coordinates = get_coordinate_dimension(coordinate_encoding)
+loss_weight_adjustments = get_loss_weights(coordinate_encoding, 
+                                           IGNORE_MOVEMENT, 
+                                           center_boost=1/100.0,
+                                           angular_boost=1.0, 
+                                           bone_length_boost=1.0)
+
+loss_weight_adjustments = np.repeat(loss_weight_adjustments, number_of_frames, axis=0)
+
+loss_weight_adjustments = K.variable(value=loss_weight_adjustments)
 
 def cumulative_point_distance_error(y_true, y_pred):
     """
@@ -39,7 +44,7 @@ def cumulative_point_distance_error(y_true, y_pred):
         weight_y = loss_weight_adjustments[:, :, number_of_coordinates:]
        
         # loss is sum of square roots of sums of squares per rows of weight-adjusted x and y differences
-        loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +
+        loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
                tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2)))
         
     elif coordinate_encoding == CoordinateType.OFFSET:
@@ -55,10 +60,10 @@ def cumulative_point_distance_error(y_true, y_pred):
         weight_c_y = loss_weight_adjustments[:, 1]
 
         # relative coordinate loss + center loss
-        loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +
-               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2))) +
-               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1))) +
-               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1))) +
+        loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
+               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2))) +\
+               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1))) +\
+               tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1)))
 
     elif coordinate_encoding == CoordinateType.ANGLE:
         # WARNING: This loss function is extremely slow !!!
@@ -92,11 +97,11 @@ def cumulative_point_distance_error(y_true, y_pred):
         # bone length differences + sum of squares of weight-adjusted center differences;
         # this is done per row (row = batch x frame), then summed together
         loss = tf.reduce_sum(
-                             tf.reduce_sum(tf.square(tf.multiply(delta_angle, weight_angle)), axis=2) + 
+                             tf.reduce_sum(tf.square(tf.multiply(delta_angle, weight_angle)), axis=2) +\
                              tf.reduce_sum(tf.square(tf.multiply(delta_bone_length, weight_bone_length)), axis=2)
                             ) +\
                tf.reduce_sum(tf.sqrt(
-                                     tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1) +
+                                     tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1) +\
                                      tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1)
                                     )
                             )
@@ -121,7 +126,7 @@ def mean_point_distance_error(y_true, y_pred):
         weight_y = loss_weight_adjustments[:, :, number_of_coordinates:]
        
         # loss is sum of square roots of sums of squares per rows of weight-adjusted x and y differences
-        loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +
+        loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
                tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2)))
         
     elif coordinate_encoding == CoordinateType.OFFSET:
@@ -137,10 +142,10 @@ def mean_point_distance_error(y_true, y_pred):
         weight_c_y = loss_weight_adjustments[:, 1]
 
         # relative coordinate loss + center loss
-        loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +
-               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2))) +
-               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1))) +
-               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1))) +
+        loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
+               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2))) +\
+               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1))) +\
+               tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1)))
 
     elif coordinate_encoding == CoordinateType.ANGLE:
         # WARNING: This loss function is extremely slow !!!
@@ -174,11 +179,11 @@ def mean_point_distance_error(y_true, y_pred):
         # bone length differences + sum of squares of weight-adjusted center differences;
         # this is done per row (row = batch x frame), then summed together
         loss = tf.reduce_mean(
-                             tf.reduce_sum(tf.square(tf.multiply(delta_angle, weight_angle)), axis=2) + 
+                             tf.reduce_sum(tf.square(tf.multiply(delta_angle, weight_angle)), axis=2) +\
                              tf.reduce_sum(tf.square(tf.multiply(delta_bone_length, weight_bone_length)), axis=2)
                             ) * 0.5 +\
                tf.reduce_mean(tf.sqrt(
-                                     tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1) +
+                                     tf.reduce_sum(tf.square(tf.multiply(c_delta_x, weight_c_x)), axis=1) +\
                                      tf.reduce_sum(tf.square(tf.multiply(c_delta_y, weight_c_y)), axis=1)
                                     )
                             ) * 0.5

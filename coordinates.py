@@ -82,6 +82,8 @@ def convert_coordinates(coordinates, coordinate_type, aspect_ratio=1.0):
 
 def normalize_coordinates(coordinates, coordinate_type=CoordinateType.SAME, video_bounds=None, track_dimensions=None, prefer_track_dimension=True):
     """
+    Normalizes coordinates to 0..1 in relevant sub-parts
+
     Arguments:
     """
     if video_bounds is None:
@@ -138,17 +140,18 @@ def normalize_coordinates(coordinates, coordinate_type=CoordinateType.SAME, vide
         if video_bounds is not None:
             # normalize center
             result[0] = (coordinates[0] - min_x) / bounds_width
-            result[1] = (coordinates[1] - min_y) / bounds_height
-        factors = np.zeros((len(coordinates) - 2))
-        factors[:number_of_coordinates - 1] = width
-        factors[number_of_coordinates - 1:] = height
-        result[2:] = np.divide(coordinates[2:], factors)
+            result[number_of_coordinates] = (coordinates[number_of_coordinates] - min_y) / bounds_height
+        factors = np.zeros_like(coordinates)
+        factors[:number_of_coordinates] = width
+        factors[number_of_coordinates:] = height
+        factors[0] = factors[number_of_coordinates] = 1.0
+        result = np.divide(result, factors)
 
     elif coordinate_type == CoordinateType.ANGLE:
         if video_bounds is not None:
             # normalize center
             result[0] = (coordinates[0] - min_x) / bounds_width
-            result[1] = (coordinates[1] - min_y) / bounds_height
+            result[number_of_coordinates] = (coordinates[number_of_coordinates] - min_y) / bounds_height
         # normalize bone lengths and keep angles as they are
         length = 1
         if track_dimensions is not None:
@@ -161,8 +164,10 @@ def normalize_coordinates(coordinates, coordinate_type=CoordinateType.SAME, vide
             
     return result
 
-def get_loss_weights(coordinate_type, normalized=False, ignore_movement=False, center_boost=1.0, angular_boost=1.0, bone_length_boost=1.0):
+def get_loss_weights(coordinate_type, ignore_movement=False, center_boost=1.0, angular_boost=1.0, bone_length_boost=1.0):
     """
+    Computes weights for individual coordinate components for custom loss functions
+
     Arguments:
     """
     number_of_coordinates = get_coordinate_dimension(coordinate_type)
