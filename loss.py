@@ -40,13 +40,13 @@ def cumulative_point_distance_error(y_true, y_pred):
         delta_x = y_true[:, :, 0, :] - y_pred[:, :, 0, :]
         delta_y = y_true[:, :, 1, :] - y_pred[:, :, 1, :]
 
-        weight_x = loss_weight_adjustments[:, :, :number_of_coordinates]
-        weight_y = loss_weight_adjustments[:, :, number_of_coordinates:]
+        weight_x = loss_weight_adjustments[:, :number_of_coordinates]
+        weight_y = loss_weight_adjustments[:, number_of_coordinates:]
        
         # loss is sum of square roots of sums of squares per rows of weight-adjusted x and y differences
         loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
                tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_y, weight_y)), axis=2)))
-        
+
     elif coordinate_encoding == CoordinateType.OFFSET:
         # (c_x, c_y, x_0...x_n, y_0...y_n)
         delta_x = y_true[:, :, 0, 1:] - y_pred[:, :, 0, 1:]
@@ -54,8 +54,8 @@ def cumulative_point_distance_error(y_true, y_pred):
         c_delta_x = y_true[:, :, 0, 0] - y_pred[:, :, 0, 0]
         c_delta_y = y_true[:, :, 1, 0] - y_pred[:, :, 1, 0]
 
-        weight_x = loss_weight_adjustments[1:number_of_coordinates]
-        weight_y = loss_weight_adjustments[number_of_coordinates + 1:]
+        weight_x = loss_weight_adjustments[:, 1:number_of_coordinates]
+        weight_y = loss_weight_adjustments[:, number_of_coordinates + 1:]
         weight_c_x = loss_weight_adjustments[:, 0]
         weight_c_y = loss_weight_adjustments[:, 1]
 

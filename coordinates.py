@@ -42,14 +42,15 @@ def convert_coordinates(coordinates, coordinate_type, aspect_ratio=1.0):
     coordinates = np.concatenate([coordinates[:base_number_of_coordinates], aspect_ratio * coordinates[base_number_of_coordinates:]]).astype(np.float32)
     # MS COCO relative to center
     if coordinate_type == CoordinateType.OFFSET:
-        result = np.zeros((2 * number_of_coordinates + 2))
+        result = np.zeros((2 * number_of_coordinates))
         result[0] = center[0]
-        result[number_of_coordinates] = center[1]
+        result[number_of_coordinates + 1] = center[1]
         # centers = np.tile(center, number_of_coordinates)  # for (x, y) ... (x, y) input
-        centers = np.repeat(center, number_of_coordinates - 1)  # for (x...x, y...y) input
+        centers = np.repeat(center, base_number_of_coordinates)  # for (x...x, y...y) input
         # first center_x, then all xs, then center_y, then all ys
-        result[1:number_of_coordinates] = np.subtract(coordinates, centers) 
-        result[number_of_coordinates + 1:] = np.subtract(coordinates, centers)
+        centered_coordinates = np.subtract(coordinates, centers)
+        result[1:number_of_coordinates] = centered_coordinates[:base_number_of_coordinates]
+        result[number_of_coordinates + 1:] = centered_coordinates[base_number_of_coordinates:]
         return result
     # Angles and sizes of main bones + center
     if coordinate_type == coordinate_type.ANGLE:

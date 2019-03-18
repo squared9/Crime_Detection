@@ -89,7 +89,7 @@ max_width = max_height = -LIMIT
 
 MAX_ROWS = -1    # unlimited
 # MAX_ROWS = 1024  # restrict for test
-MAX_ROWS = 10 * 1024 # restrict for test
+# MAX_ROWS = 10 * 1024 # restrict for test
 
 for i, record in training_df.iterrows():
     if MAX_ROWS is not None and MAX_ROWS >= 0 and i > MAX_ROWS:
