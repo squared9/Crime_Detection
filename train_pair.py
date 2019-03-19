@@ -13,7 +13,9 @@ from model import get_autoencoder, get_sequence_model
 from configuration import (IDEAL_HUMAN_BODY_RATIO, NORMALIZE_ASPECT_RATIO, 
                            number_of_frames, base_number_of_coordinates, number_of_coordinates)
 from generator_pair import Dual_Track_Generator
-from loss import pair_loss, cumulative_point_distance_error, mean_point_distance_error, loss_weight_adjustments, base_loss_function
+from loss import (pair_loss, cumulative_point_distance_error, mean_point_distance_error, 
+                  pair_cumulative_point_distance_error, pair_mean_point_distance_error, 
+                  loss_weight_adjustments, base_loss_function)
 
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard
 from keras.optimizers import Adam
@@ -156,6 +158,7 @@ for i, record in training_df.iterrows():
         correction_a = get_aspect_ratio_correction(max_width_a, max_height_a)
         correction_b = get_aspect_ratio_correction(max_width_b, max_height_b)
         track_dimensions[previous_sequence_id] = [max_width, max_height, correction, max_width_a, max_height_a, correction_a, max_width_b, max_height_b, correction_b]
+        # print(track_dimensions[previous_sequence_id])
         min_x = min_y = min_xa = min_ya = min_xb = min_yb = LIMIT
         max_x = max_y = max_xa = max_ya = max_xb = max_yb = -LIMIT
         max_width = max_height = max_width_a = max_height_a = max_width_b = max_height_b = -LIMIT
@@ -166,6 +169,7 @@ for i, record in training_df.iterrows():
         
     steps = training_sequences[sequence_id]
     steps.append((coordinates, bounding_box, bounding_box_a, bounding_box_b))
+    # print(sequence_id, bounding_box, bounding_box_a, bounding_box_b)
     
     min_x, min_y = min(min_x, bounding_box[0]), min(min_y, bounding_box[1])
     max_x, max_y = max(max_x, bounding_box[2]), max(max_y, bounding_box[3])
@@ -213,6 +217,8 @@ base_loss_function = cumulative_point_distance_error
 # base_loss_function = mean_point_distance_error
 
 # model.compile(optimizer=optimizer, loss="mean_squared_error")
+# model.compile(optimizer=optimizer, loss=pair_cumulative_point_distance_error)
+# model.compile(optimizer=optimizer, loss=pair_mean_point_distance_error)
 model.compile(optimizer=optimizer, loss=pair_loss)
 
 reduce_lr = ReduceLROnPlateau(monitor="loss", factor=0.1, patience=1, verbose=1, mode="min", min_lr=MINIMAL_LEARNING_RATE)  # Hmm, doesn't work with LSTM - why?

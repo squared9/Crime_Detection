@@ -2,6 +2,9 @@ import numpy as np
 from enum import Enum
 from data_format import bone_indices
 
+# needed for a derivative, otherwise loss returns NaN for 0 filled tensors...
+TENSOR_EPSILON = 1E-7
+
 class CoordinateType(Enum):
     SAME = 0    # MS COCO
     OFFSET = 1  # MS COCO relative to center
@@ -175,15 +178,15 @@ def get_loss_weights(coordinate_type, ignore_movement=False, center_boost=1.0, a
     result = np.ones((1, number_of_coordinates * 2))
     if coordinate_type == CoordinateType.OFFSET:
         if ignore_movement:
-            result[0, 0] = 0  # ignore center point prediction
-            result[0, number_of_coordinates] = 0
+            result[0, 0] = TENSOR_EPSILON  # ignore center point prediction
+            result[0, number_of_coordinates] = TENSOR_EPSILON
         else:
             result[0, 0] = center_boost
             result[0, number_of_coordinates] = center_boost
     elif coordinate_type == CoordinateType.ANGLE:
         if ignore_movement:
-            result[0, 0] = 0  # ignore center point prediction
-            result[0, number_of_coordinates] = 0
+            result[0, 0] = TENSOR_EPSILON  # ignore center point prediction
+            result[0, number_of_coordinates] = TENSOR_EPSILON
         else:
             result[0, 0] = center_boost
             result[0, number_of_coordinates] = center_boost
