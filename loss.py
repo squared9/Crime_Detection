@@ -57,7 +57,7 @@ def cumulative_point_distance_error(y_true, y_pred):
         weight_x = loss_weight_adjustments[:, 1:number_of_coordinates]
         weight_y = loss_weight_adjustments[:, number_of_coordinates + 1:]
         weight_c_x = loss_weight_adjustments[:, 0]
-        weight_c_y = loss_weight_adjustments[:, 1]
+        weight_c_y = loss_weight_adjustments[:, number_of_coordinates]
 
         # relative coordinate loss + center loss
         loss = tf.reduce_sum(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
@@ -91,7 +91,7 @@ def cumulative_point_distance_error(y_true, y_pred):
         
         # center weight
         weight_c_x = loss_weight_adjustments[:, 0]
-        weight_c_y = loss_weight_adjustments[:, 1]
+        weight_c_y = loss_weight_adjustments[:, number_of_coordinates]
         
         # loss is sum of squares of weight-adjusted angular differences + sum of squares of weight-adjusted
         # bone length differences + sum of squares of weight-adjusted center differences;
@@ -122,8 +122,8 @@ def mean_point_distance_error(y_true, y_pred):
         delta_x = y_true[:, :, 0, :] - y_pred[:, :, 0, :]
         delta_y = y_true[:, :, 1, :] - y_pred[:, :, 1, :]
 
-        weight_x = loss_weight_adjustments[:, :, :number_of_coordinates]
-        weight_y = loss_weight_adjustments[:, :, number_of_coordinates:]
+        weight_x = loss_weight_adjustments[:, :number_of_coordinates]
+        weight_y = loss_weight_adjustments[:, number_of_coordinates:]
        
         # loss is sum of square roots of sums of squares per rows of weight-adjusted x and y differences
         loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
@@ -136,10 +136,10 @@ def mean_point_distance_error(y_true, y_pred):
         c_delta_x = y_true[:, :, 0, 0] - y_pred[:, :, 0, 0]
         c_delta_y = y_true[:, :, 1, 0] - y_pred[:, :, 1, 0]
 
-        weight_x = loss_weight_adjustments[1: number_of_coordinates]
-        weight_y = loss_weight_adjustments[number_of_coordinates + 1:]
+        weight_x = loss_weight_adjustments[:, 1: number_of_coordinates]
+        weight_y = loss_weight_adjustments[:, number_of_coordinates + 1:]
         weight_c_x = loss_weight_adjustments[:, 0]
-        weight_c_y = loss_weight_adjustments[:, 1]
+        weight_c_y = loss_weight_adjustments[:, number_of_coordinates]
 
         # relative coordinate loss + center loss
         loss = tf.reduce_mean(tf.sqrt(tf.reduce_sum(tf.square(tf.multiply(delta_x, weight_x)), axis=2))) +\
@@ -173,7 +173,7 @@ def mean_point_distance_error(y_true, y_pred):
         
         # center weight
         weight_c_x = loss_weight_adjustments[:, 0]
-        weight_c_y = loss_weight_adjustments[:, 1]
+        weight_c_y = loss_weight_adjustments[:, number_of_coordinates]
         
         # loss is sum of squares of weight-adjusted angular differences + sum of squares of weight-adjusted
         # bone length differences + sum of squares of weight-adjusted center differences;
@@ -191,9 +191,9 @@ def mean_point_distance_error(y_true, y_pred):
 
 # NOTE: This needs to be set for a pair-wise loss function
 #       Keras can't pass additional parameters to its loss function callbacks :-(
-loss_function = cumulative_point_distance_error
+base_loss_function = cumulative_point_distance_error
 
-def get_pair_loss(y_true, y_pred):
+def pair_loss(y_true, y_pred):
     """
     Computes a pair-wise loss function assuming two parameters 
     Loss function for a single track is defined by loss_function variable
@@ -207,8 +207,8 @@ def get_pair_loss(y_true, y_pred):
     y_pred -- tensor of predicted values, [batch number, frame number, x/y as 0/1, coordinate]
 
     """
-    loss_1 = loss_function(y_true[:, :, :, :number_of_coordinates],
-                           y_pred[:, :, :, :number_of_coordinates])
-    loss_2 = loss_function(y_true[:, :, :, number_of_coordinates:],
-                           y_pred[:, :, :, number_of_coordinates:])
-    return tf.reduce_sum(loss_1, loss_2)
+    loss_1 = base_loss_function(y_true[:, :, :, :number_of_coordinates],
+                                y_pred[:, :, :, :number_of_coordinates])
+    loss_2 = base_loss_function(y_true[:, :, :, number_of_coordinates:],
+                                y_pred[:, :, :, number_of_coordinates:])
+    return tf.reduce_sum(loss_1)  + tf.reduce_sum(loss_2)

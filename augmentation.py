@@ -55,7 +55,9 @@ def augment_coordinates(coordinates,
 
     return result
 
-def augment_pair_coordinates(randomize_positions=True, 
+def augment_pair_coordinates(coordinates_1,
+                             coordinates_2,
+                             randomize_positions=True, 
                              forced_shifts=None, 
                              p_horizontal_flip=0.5, 
                              force_flip=None,
@@ -67,30 +69,31 @@ def augment_pair_coordinates(randomize_positions=True,
     """
     """
 
-    coordinates_1 = coordinates[: 2 * number_of_coordinates]
-    coordinates_2 = coordinates[2 * number_of_coordinates:]
+    # coordinates_1 = coordinates[: 2 * number_of_coordinates]
+    # coordinates_2 = coordinates[2 * number_of_coordinates:]
 
     # force_* variables are used to make sure both coordinates in a pair are augmented the same way
 
     # flip horizontally?
     if force_flip is None and p_horizontal_flip > 0:
         force_flip = np.random.random()
-        force_flip = do_flip > p_horizontal_flip
+        force_flip = force_flip > p_horizontal_flip
 
     # shift by how much?
-    if force_shifts is None and sequence_boundary is not None:
+    if forced_shifts is None and sequence_boundary is not None:
         min_x, min_y, max_x, max_y = sequence_boundary
         shift_x = np.random.random() * (max_x - min_x) + min_x
         shift_y = np.random.random() * (max_y - min_y) + min_y
-        force_shifts = (shift_x, shift_y)
+        forced_shifts = (shift_x, shift_y)
 
     # scale by how much?
     if force_scale is not None and mean_rescale_factor != 1.0:
         force_scale = np.random.random() * MAXIMAL_SCALE + mean_scale_factor
 
-    coordinates_1 = augment_coordinates(coordinates_1, force_flip=force_flip, force_shifts=force_shifts, force_scale=force_scale)
-    coordinates_2 = augment_coordinates(coordinates_2, force_flip=force_flip, force_shifts=force_shifts, force_scale=force_scale)
+    coordinates_1 = augment_coordinates(coordinates_1, force_flip=force_flip, forced_shifts=forced_shifts, force_scale=force_scale)
+    coordinates_2 = augment_coordinates(coordinates_2, force_flip=force_flip, forced_shifts=forced_shifts, force_scale=force_scale)
 
-    result = np.concatenate([coordinates_1, coordinates_2])
+    # result = np.concatenate([coordinates_1, coordinates_2])
+    result = coordinates_1, coordinates_2
 
     return result

@@ -59,7 +59,7 @@ def get_autoencoder(input_dimension, sizes, activation="relu", is_variational=Fa
 # test_autoencoder_only = True
 test_autoencoder_only = False
 
-def get_sequence_model(inner_model, frame_dimension, number_of_frames=30, lstm_activation="tanh", verbose=False):
+def get_sequence_model(inner_model, frame_dimension, number_of_frames=30, lstm_activation="tanh", factor=1, verbose=False):
 
     input_dimension = tuple([number_of_frames] + list(frame_dimension))
     inputs = Input(shape=input_dimension)
@@ -78,13 +78,13 @@ def get_sequence_model(inner_model, frame_dimension, number_of_frames=30, lstm_a
         outputs = Reshape(input_dimension)(sequence_layer)  # to debug autoencoder
     else:
         # put each autoencoder output to a LSTM with as many units as frames in a sequence
-        lstm_layer = LSTM(units=2 * number_of_coordinates, activation=lstm_activation, return_sequences=True)(sequence_layer)
-        lstm_layer = LSTM(units=2 * number_of_coordinates, activation=lstm_activation, return_sequences=True)(lstm_layer)
-        lstm_layer = LSTM(units=2 * number_of_coordinates, activation=lstm_activation, return_sequences=True)(lstm_layer)
+        lstm_layer = LSTM(units=2 * factor * number_of_coordinates, activation=lstm_activation, return_sequences=True)(sequence_layer)
+        lstm_layer = LSTM(units=2 * factor * number_of_coordinates, activation=lstm_activation, return_sequences=True)(lstm_layer)
+        lstm_layer = LSTM(units=2 * factor * number_of_coordinates, activation=lstm_activation, return_sequences=True)(lstm_layer)
 #         lstm_layer = LSTM(units=2 * number_of_coordinates, activation=lstm_activation, return_sequences=True)(lstm_layer)
 #         lstm_layer = LSTM(units=2 * number_of_coordinates, return_sequences=True, activation="linear")(lstm_layer)
         outputs = Reshape(input_dimension)(lstm_layer)
-        outputs = Dense(number_of_coordinates, activation="linear")(outputs)  # regression layer
+        outputs = Dense(factor * number_of_coordinates, activation="linear")(outputs)  # regression layer
 
     model = Model(inputs=inputs, outputs=outputs)
     if verbose:

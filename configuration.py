@@ -28,9 +28,6 @@ coordinate_encoding = CoordinateType.ANGLE  # encode bone angles and lengths
 number_of_coordinates = get_coordinate_dimension(coordinate_encoding)
 base_number_of_coordinates = get_coordinate_dimension(CoordinateType.SAME)
 
-# input shape of 1 pose/frame
-input_shape = (2, number_of_coordinates)
-
 # length of a training sequence in frames
 # number_of_frames = 300
 number_of_frames = 30
